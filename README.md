@@ -1,4 +1,4 @@
-# Burocrata: Check and insert copyright and license notices into source code files
+# Burocrata: Check and insert copyright and license notices into source code
 
 Part of the [Fatiando a Terra][fatiando] project
 
@@ -69,6 +69,8 @@ constraints):
 * [click](https://click.palletsprojects.com) for building the command-line
   interface.
 * [tomli](https://github.com/hukkin/tomli) to parse the TOML configuration
+  files.
+* [pathspec](https://github.com/cpburnz/python-pathspec) to parse `.gitignore`
   files.
 
 ## Contacting Us
