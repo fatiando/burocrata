@@ -88,9 +88,12 @@ def main(extension, check, verbose, directory):
                     continue
                 amount += 1
                 with open(path) as file:
-                    for notice_line, file_line in zip(notice, file):
-                        # Use [:-1] to strip the newline from the end
-                        if notice_line != file_line[:-1]:
+                    source_code = path.read_text().split("\n")
+                if source_code:
+                    missing_notice.append(path)
+                else:
+                    for notice_line, file_line in zip(notice, source_code):
+                        if notice_line != file_line:
                             missing_notice.append(path)
                             break
         reporter.echo(
