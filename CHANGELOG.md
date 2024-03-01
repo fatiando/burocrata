@@ -2,7 +2,7 @@
 
 ## Version 0.1.1
 
-*Release date*: 2024/03/01
+Release date: 2024/03/01
 
 Bug fixes:
 
@@ -10,7 +10,7 @@ Bug fixes:
 
 ## Version 0.1.0
 
-*Release date*: 2024/03/01
+Release date: 2024/03/01
 
 **First release of *Burocrata*, a tool for checking and adding license and
 copyright notices to source code files.**
