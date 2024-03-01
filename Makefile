@@ -29,6 +29,7 @@ test:
 	rm -r $(TESTDIR)
 
 format:
+	burocrata $(CHECK_STYLE)
 	isort $(CHECK_STYLE)
 	black $(CHECK_STYLE)
 
@@ -40,6 +41,7 @@ check-style:
 check-format:
 	isort --check $(CHECK_STYLE)
 	black --check $(CHECK_STYLE)
+	burocrata --check $(CHECK_STYLE)
 
 clean:
 	find . -name "*.pyc" -exec rm -v {} \;

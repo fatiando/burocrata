@@ -1,24 +1,37 @@
+# Copyright (c) 2024 The Burocrata Developers.
+# Distributed under the terms of the MIT License.
+# SPDX-License-Identifier: MIT
+# This code is part of the Fatiando a Terra project (https://www.fatiando.org).
 """
 Defines the command line interface.
 Uses click to define a CLI around the ``main`` function.
 """
+
 import pathlib
 import sys
 import traceback
 
 import click
-import tomli
 import pathspec
+import tomli
 
 
 @click.command(context_settings={"help_option_names": ["-h", "--help"]})
 @click.option(
     "--extension",
     "-e",
-    default="py,c,h,sh",
+    default="py",
     show_default=True,
     help="Extensions of files that will be crawled. Should be a single string "
-    "or a comma separated list (no spaces) and should NOT include a leading '.'",
+    "or a comma separated list (no spaces) and should not include a leading '.'",
+)
+@click.option(
+    "--check",
+    "-c",
+    default=False,
+    is_flag=True,
+    show_default=True,
+    help="Only check for the presence of a notice and report which files are missing it.",
 )
 @click.option(
     "--verbose/--quiet",
@@ -31,20 +44,15 @@ import pathspec
 @click.argument(
     "directory", type=click.Path(exists=True, file_okay=False, path_type=pathlib.Path)
 )
-def main(extension, verbose, directory):
+def main(extension, check, verbose, directory):
     """
     Burocrata: Check and insert copyright and license notices into source code
 
     The license notice MUST be set in a 'pyproject.toml' file located in the
-    current directory like so:
+    current directory that specifies the license notice.
 
-        [tool.burocrata]
-        notice = '''
-        # Copyright (c) YYYY Name of Developer.
-        # Distributed under the terms of the BSD 3-Clause License.
-        # SPDX-License-Identifier: BSD-3-Clause
-        '''
-
+    By default, will crawl the given directory and add the license notice to
+    every file with the given extensions that doesn't already have it.
     """
     reporter = Reporter(verbose)
     extensions = extension.split(",")
@@ -73,17 +81,39 @@ def main(extension, verbose, directory):
         gitignore = get_gitignore()
 
         missing_notice = []
+        amount = 0
         for ext in extensions:
             for path in directory.glob(f"**/*.{ext}"):
                 if gitignore.match_file(path):
                     continue
+                amount += 1
                 with open(path) as file:
                     for notice_line, file_line in zip(notice, file):
-                        if notice_line != file_line:
+                        # Use [:-1] to strip the newline from the end
+                        if notice_line != file_line[:-1]:
                             missing_notice.append(path)
                             break
+        reporter.echo(
+            f"Found {amount} file(s) in '{str(directory)}' ending in {extension}."
+        )
 
-        print(missing_notice)
+        if missing_notice:
+            print(f"Found {len(missing_notice)} file(s) without the license notice:")
+            for path in missing_notice:
+                print(f"  {str(path)}")
+            if check:
+                sys.exit(1)
+        else:
+            print("No files found with a missing license notice")
+            sys.exit(0)
+
+        for path in missing_notice:
+            source_code = notice.copy()
+            source_code.extend(path.read_text().split("\n"))
+            with open(path, "w") as output:
+                output.write("\n".join(source_code))
+        print(f"Successfully added the license notice to {len(missing_notice)} files.")
+        sys.exit(0)
 
     except Exception:
         reporter.error("\nError encountered while processing:\n")
@@ -123,14 +153,14 @@ class Reporter:
     def __init__(self, verbose):
         self.verbose = verbose
 
-    def echo(self, message):
+    def echo(self, message=""):
         """
         Print the message if verbosity is enabled.
         """
         if self.verbose:
             click.echo(message, err=True)
 
-    def error(self, message):
+    def error(self, message=""):
         """
         Print the message regardless of verbosity settings.
         """
