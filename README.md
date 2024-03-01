@@ -1,6 +1,6 @@
 # Burocrata: Check and insert copyright and license notices into source code
 
-Part of the [Fatiando a Terra][fatiando] project
+Part of the [Fatiando a Terra][fatiando] project.
 
 [![Latest release on PyPI](https://img.shields.io/pypi/v/burocrata.svg?style=flat-square)][pypi]
 [![Latest release on conda-forge](https://img.shields.io/conda/vn/conda-forge/burocrata.svg?style=flat-square)][conda-forge]
@@ -51,8 +51,7 @@ $ cat pyproject.toml
 notice = '''
 # Copyright (c) YYYY Name of Developer.
 # Distributed under the terms of the BSD 3-Clause License.
-# SPDX-License-Identifier: BSD-3-Clause
-'''
+# SPDX-License-Identifier: BSD-3-Clause'''
 ```
 
 See a full list of options:
