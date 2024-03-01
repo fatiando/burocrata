@@ -87,9 +87,8 @@ def main(extension, check, verbose, directory):
                 if gitignore.match_file(path):
                     continue
                 amount += 1
-                with open(path) as file:
-                    source_code = path.read_text().split("\n")
-                if source_code:
+                source_code = path.read_text().split("\n")
+                if not source_code:
                     missing_notice.append(path)
                 else:
                     for notice_line, file_line in zip(notice, source_code):
