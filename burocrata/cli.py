@@ -42,26 +42,27 @@ import tomli
 )
 @click.version_option()
 @click.argument(
-    "directory", type=click.Path(exists=True, file_okay=False, path_type=pathlib.Path)
+    "directories",
+    type=click.Path(exists=True, file_okay=False, path_type=pathlib.Path),
+    nargs=-1,
 )
-def main(extension, check, verbose, directory):
+def main(extension, check, verbose, directories):
     """
     Burocrata: Check and insert copyright and license notices into source code
 
     The license notice MUST be set in a 'pyproject.toml' file located in the
     current directory that specifies the license notice.
 
-    By default, will crawl the given directory and add the license notice to
+    By default, will crawl the given directories and add the license notice to
     every file with the given extensions that doesn't already have it.
     """
     reporter = Reporter(verbose)
     extensions = extension.split(",")
     try:
-
         config_file = pathlib.Path("./pyproject.toml")
         if not config_file.exists():
             reporter.error(
-                "Missing pyproject.toml configuration file in the current directory."
+                "ERROR: Missing pyproject.toml configuration file in the current directory."
             )
             sys.exit(1)
         with open(config_file, "rb") as file:
@@ -72,7 +73,7 @@ def main(extension, check, verbose, directory):
             or "notice" not in config["tool"]["burocrata"]
         ):
             reporter.error(
-                "Missing license/copyright notice in pyproject.toml configuration file:"
+                "ERROR: Missing license/copyright notice in pyproject.toml configuration file:"
             )
             reporter.error(config_file.read_text())
             sys.exit(1)
@@ -81,23 +82,24 @@ def main(extension, check, verbose, directory):
         gitignore = get_gitignore()
 
         missing_notice = []
-        amount = 0
-        for ext in extensions:
-            for path in directory.glob(f"**/*.{ext}"):
-                if gitignore.match_file(path):
-                    continue
-                amount += 1
-                source_code = path.read_text().split("\n")
-                if not source_code:
-                    missing_notice.append(path)
-                else:
-                    for notice_line, file_line in zip(notice, source_code):
-                        if notice_line != file_line:
-                            missing_notice.append(path)
-                            break
-        reporter.echo(
-            f"Found {amount} file(s) in '{str(directory)}' ending in {extension}."
-        )
+        for directory in directories:
+            amount = 0
+            for ext in extensions:
+                for path in directory.glob(f"**/*.{ext}"):
+                    if gitignore.match_file(path):
+                        continue
+                    amount += 1
+                    source_code = path.read_text().split("\n")
+                    if not source_code:
+                        missing_notice.append(path)
+                    else:
+                        for notice_line, file_line in zip(notice, source_code):
+                            if notice_line != file_line:
+                                missing_notice.append(path)
+                                break
+            reporter.echo(
+                f"Found {amount} file(s) in '{str(directory)}' ending in {extension}."
+            )
 
         if missing_notice:
             print(f"Found {len(missing_notice)} file(s) without the license notice:")
@@ -118,7 +120,7 @@ def main(extension, check, verbose, directory):
         sys.exit(0)
 
     except Exception:
-        reporter.error("\nError encountered while processing:\n")
+        reporter.error("\nUnexpected error encountered while processing:\n")
         reporter.error(traceback.format_exc())
         reporter.error("Oh no! Something went wrong. See the messages above.")
         sys.exit(1)
