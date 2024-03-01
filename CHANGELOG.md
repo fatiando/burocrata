@@ -1,5 +1,13 @@
 # Changelog
 
+## Version 0.1.1
+
+*Release date*: 2024/03/01
+
+Bug fixes:
+
+* Bug fix: Check failed if the source file is empty ([#3](https://github.com/fatiando/burocrata/pull/3))
+
 ## Version 0.1.0
 
 *Release date*: 2024/03/01
