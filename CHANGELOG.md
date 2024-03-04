@@ -1,5 +1,13 @@
 # Changelog
 
+## Version 0.2.0
+
+Release date: 2024/03/04
+
+New features:
+
+* Add support for multiple input directories ([#5](https://github.com/fatiando/burocrata/pull/5))
+
 ## Version 0.1.1
 
 Release date: 2024/03/01
