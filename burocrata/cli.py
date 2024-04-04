@@ -78,7 +78,13 @@ def main(extension, check, verbose, directories):
             reporter.error(config_file.read_text())
             sys.exit(1)
         notice = config["tool"]["burocrata"]["notice"].split("\n")
-
+        
+        #########
+        if "exclude" in config["tool"]["burocrata"]:
+            exclude = config["tool"]["burocrata"]["exclude"]
+            exclude = pathspec.PathSpec.from_lines("gitwildmatch", exclude)
+        ########
+        
         gitignore = get_gitignore()
 
         missing_notice = []
@@ -87,6 +93,8 @@ def main(extension, check, verbose, directories):
             for ext in extensions:
                 for path in directory.glob(f"**/*.{ext}"):
                     if gitignore.match_file(path):
+                        continue
+                    if exclude.match_file(path):
                         continue
                     amount += 1
                     source_code = path.read_text().split("\n")

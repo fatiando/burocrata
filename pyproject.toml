@@ -61,3 +61,4 @@ notice = '''
 # Distributed under the terms of the MIT License.
 # SPDX-License-Identifier: MIT
 # This code is part of the Fatiando a Terra project (https://www.fatiando.org).'''
+exclude=[]
