@@ -40,13 +40,21 @@ import tomli
     show_default=True,
     help="Print information during execution / Don't print",
 )
+@click.option(
+    "--ignore",
+    "-i",
+    default=None,
+    show_default=True,    
+    help="A comma separated list of directories to ignore during the analysis ",
+    
+)
 @click.version_option()
 @click.argument(
     "directories",
     type=click.Path(exists=True, file_okay=False, path_type=pathlib.Path),
     nargs=-1,
 )
-def main(extension, check, verbose, directories):
+def main(extension, check, verbose, directories, ignore):
     """
     Burocrata: Check and insert copyright and license notices into source code
 
@@ -78,7 +86,18 @@ def main(extension, check, verbose, directories):
             reporter.error(config_file.read_text())
             sys.exit(1)
         notice = config["tool"]["burocrata"]["notice"].split("\n")
-
+        
+        #########
+        if "exclude" in config["tool"]["burocrata"]:
+            exclude = config["tool"]["burocrata"]["exclude"]
+            exclude = pathspec.PathSpec.from_lines("gitwildmatch", exclude)
+        ########
+        if ignore:
+            ignore = ignore.split(",")
+            print(ignore)
+            ignore = [i for i in ignore]
+            ignore = pathspec.PathSpec.from_lines("gitwildmatch", ignore)
+            
         gitignore = get_gitignore()
 
         missing_notice = []
@@ -88,6 +107,11 @@ def main(extension, check, verbose, directories):
                 for path in directory.glob(f"**/*.{ext}"):
                     if gitignore.match_file(path):
                         continue
+                    if exclude.match_file(path):
+                        continue
+                    if ignore:
+                        if ignore.match_file(path):
+                            continue
                     amount += 1
                     source_code = path.read_text().split("\n")
                     if not source_code:
