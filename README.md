@@ -4,7 +4,6 @@ Part of the [Fatiando a Terra][fatiando] project.
 
 [![Latest release on PyPI](https://img.shields.io/pypi/v/burocrata.svg?style=flat-square)][pypi]
 [![Latest release on conda-forge](https://img.shields.io/conda/vn/conda-forge/burocrata.svg?style=flat-square)][conda-forge]
-[![Test coverage report](https://img.shields.io/codecov/c/github/fatiando/burocrata/main?style=flat-square)][coverage]
 [![Compatible Python versions](https://img.shields.io/pypi/pyversions/burocrata.svg?style=flat-square)][pypi]
 
 ## About
