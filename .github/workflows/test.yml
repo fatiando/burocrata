@@ -117,4 +117,4 @@ jobs:
         run: python -m pip install --no-deps --editable .
 
       - name: Run Burocrata on itself to make sure nothing crashes
-        run: burocrata --check burocrata
+        run: burocrata --check src/burocrata
