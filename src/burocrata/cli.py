@@ -4,6 +4,7 @@
 # This code is part of the Fatiando a Terra project (https://www.fatiando.org).
 """
 Defines the command line interface.
+
 Uses click to define a CLI around the ``main`` function.
 """
 
@@ -48,7 +49,7 @@ import tomli
 )
 def main(extension, check, verbose, directories):
     """
-    Burocrata: Check and insert copyright and license notices into source code
+    Burocrata: Check and insert copyright and license notices into source code.
 
     The license notice MUST be set in a 'pyproject.toml' file located in the
     current directory that specifies the license notice.
@@ -65,7 +66,7 @@ def main(extension, check, verbose, directories):
                 "ERROR: Missing pyproject.toml configuration file in the current directory."
             )
             sys.exit(1)
-        with open(config_file, "rb") as file:
+        with config_file.open(mode="rb") as file:
             config = tomli.load(file)
         if (
             "tool" not in config
@@ -98,25 +99,29 @@ def main(extension, check, verbose, directories):
                                 missing_notice.append(path)
                                 break
             reporter.echo(
-                f"Found {amount} file(s) in '{str(directory)}' ending in {extension}."
+                f"Found {amount} file(s) in '{directory!s}' ending in {extension}."
             )
 
         if missing_notice:
-            print(f"Found {len(missing_notice)} file(s) without the license notice:")
+            reporter.error(
+                f"Found {len(missing_notice)} file(s) without the license notice:"
+            )
             for path in missing_notice:
-                print(f"  {str(path)}")
+                reporter.error(f"  {path!s}")
             if check:
                 sys.exit(1)
         else:
-            print("No files found with a missing license notice")
+            reporter.echo("No files found with a missing license notice")
             sys.exit(0)
 
         for path in missing_notice:
             source_code = notice.copy()
             source_code.extend(path.read_text().split("\n"))
-            with open(path, "w") as output:
+            with pathlib.Path(path).open(mode="w") as output:
                 output.write("\n".join(source_code))
-        print(f"Successfully added the license notice to {len(missing_notice)} files.")
+        reporter.echo(
+            f"Successfully added the license notice to {len(missing_notice)} files."
+        )
         sys.exit(0)
 
     except Exception:
@@ -134,7 +139,7 @@ def get_gitignore():
     """
     Return a PathSpec matching gitignore content if present.
     """
-    gitignore = pathlib.Path(".") / ".gitignore"
+    gitignore = pathlib.Path() / ".gitignore"
     lines = []
     if gitignore.is_file():
         with gitignore.open() as gi_file:
