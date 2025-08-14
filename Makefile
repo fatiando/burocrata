@@ -1,8 +1,9 @@
 # Build, package, test, and clean
 PROJECT=burocrata
-TESTDIR=tmp-test-dir-with-unique-name
-PYTEST_ARGS=--cov-config=../.coveragerc --cov-report=term-missing --cov=$(PROJECT) --doctest-modules -vv --pyargs
-CHECK_STYLE=$(PROJECT)
+CHECK_STYLE=src/$(PROJECT)
+GITHUB_ACTIONS=.github/workflows
+
+.PHONY: help build install test format check check-format check-style check-actions clean
 
 help:
 	@echo "Commands:"
@@ -11,7 +12,7 @@ help:
 	@echo "  test      run the test suite (including doctests) and report coverage"
 	@echo "  format    automatically format the code"
 	@echo "  check     run code style and quality checks"
-	@echo "  lint      run pylint for a deeper (and slower) quality check"
+	@echo "  build     build source and wheel distributions"
 	@echo "  clean     clean up build and generated files"
 	@echo ""
 
@@ -19,33 +20,33 @@ build:
 	python -m build .
 
 install:
-	python -m pip install --no-deps -e .
+	python -m pip install --no-deps --editable .
 
 test:
-	# Run a tmp folder to make sure the tests are run on the installed version
-	mkdir -p $(TESTDIR)
-	cd $(TESTDIR); pytest $(PYTEST_ARGS) $(PROJECT)
-	cp $(TESTDIR)/.coverage* .
-	rm -r $(TESTDIR)
+	#pytest --cov-report=term-missing --cov --doctest-modules --verbose test src/$(PROJECT)
+	echo "No tests implemented yet."
 
 format:
-	burocrata $(CHECK_STYLE)
-	isort $(CHECK_STYLE)
-	black $(CHECK_STYLE)
+	ruff check --select I --fix $(CHECK_STYLE) # fix isort errors
+	ruff format $(CHECK_STYLE)
+	burocrata --extension=py $(CHECK_STYLE)
 
-check: check-format check-style
-
-check-style:
-	flake8 $(CHECK_STYLE)
+check: check-format check-style check-actions
 
 check-format:
-	isort --check $(CHECK_STYLE)
-	black --check $(CHECK_STYLE)
-	burocrata --check $(CHECK_STYLE)
+	ruff format --check $(CHECK_STYLE)
+	burocrata --check --extension=py $(CHECK_STYLE)
+
+check-style:
+	ruff check $(CHECK_STYLE)
+
+check-actions:
+	zizmor $(GITHUB_ACTIONS)
 
 clean:
 	find . -name "*.pyc" -exec rm -v {} \;
 	find . -name "*.orig" -exec rm -v {} \;
 	find . -name ".coverage.*" -exec rm -v {} \;
-	rm -rvf build dist MANIFEST *.egg-info __pycache__ .coverage .cache .pytest_cache $(PROJECT)/_version.py
-	rm -rvf $(TESTDIR) dask-worker-space
+	find . -name "__pycache__" -exec rm -v {} \;
+	find . -name "*.egg-info " -exec rm -v {} \;
+	rm -rvf build dist MANIFEST .coverage .cache .pytest_cache src/$(PROJECT)/_version.py
