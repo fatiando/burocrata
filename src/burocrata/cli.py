@@ -41,21 +41,13 @@ import tomli
     show_default=True,
     help="Print information during execution / Don't print",
 )
-@click.option(
-    "--ignore",
-    "-i",
-    default=None,
-    show_default=True,    
-    help="A comma separated list of directories to ignore during the analysis ",
-    
-)
 @click.version_option()
 @click.argument(
     "directories",
     type=click.Path(exists=True, file_okay=False, path_type=pathlib.Path),
     nargs=-1,
 )
-def main(extension, check, verbose, directories, ignore):
+def main(extension, check, verbose, directories):
     """
     Burocrata: Check and insert copyright and license notices into source code.
 
@@ -68,7 +60,8 @@ def main(extension, check, verbose, directories, ignore):
     reporter = Reporter(verbose)
     extensions = extension.split(",")
     try:
-        config_file = pathlib.Path("./pyproject.toml")
+        # Parse the config file
+        config_file = pathlib.Path() / "pyproject.toml"
         if not config_file.exists():
             reporter.error(
                 "ERROR: Missing pyproject.toml configuration file in the current directory."
@@ -87,32 +80,20 @@ def main(extension, check, verbose, directories, ignore):
             reporter.error(config_file.read_text())
             sys.exit(1)
         notice = config["tool"]["burocrata"]["notice"].split("\n")
-        
-        #########
+
+        # Get a spec to match ignored files
+        ignore_entries = get_gitignore()
         if "exclude" in config["tool"]["burocrata"]:
-            exclude = config["tool"]["burocrata"]["exclude"]
-            exclude = pathspec.PathSpec.from_lines("gitwildmatch", exclude)
-        ########
-        if ignore:
-            ignore = ignore.split(",")
-            print(ignore)
-            ignore = [i for i in ignore]
-            ignore = pathspec.PathSpec.from_lines("gitwildmatch", ignore)
-            
-        gitignore = get_gitignore()
+            ignore_entries.extend(config["tool"]["burocrata"]["exclude"])
+        ignore = pathspec.PathSpec.from_lines("gitwildmatch", ignore_entries)
 
         missing_notice = []
         for directory in directories:
             amount = 0
             for ext in extensions:
                 for path in directory.glob(f"**/*.{ext}"):
-                    if gitignore.match_file(path):
+                    if ignore.match_file(path):
                         continue
-                    if exclude.match_file(path):
-                        continue
-                    if ignore:
-                        if ignore.match_file(path):
-                            continue
                     amount += 1
                     source_code = path.read_text().split("\n")
                     if not source_code:
@@ -161,14 +142,14 @@ def main(extension, check, verbose, directories, ignore):
 # https://github.com/fatiando/harmonica/tree/v0.6.0
 def get_gitignore():
     """
-    Return a PathSpec matching gitignore content if present.
+    Return a list of entries from .gitignore if it exists.
     """
     gitignore = pathlib.Path() / ".gitignore"
     lines = []
     if gitignore.is_file():
         with gitignore.open() as gi_file:
             lines = gi_file.readlines()
-    return pathspec.PathSpec.from_lines("gitwildmatch", lines)
+    return lines
 
 
 # The Reporter class is originally from software Dependente:
