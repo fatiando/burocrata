@@ -51,6 +51,7 @@ notice = '''
 # Copyright (c) YYYY Name of Developer.
 # Distributed under the terms of the BSD 3-Clause License.
 # SPDX-License-Identifier: BSD-3-Clause'''
+exclude = ["__init__.py"]
 ```
 
 See a full list of options:
