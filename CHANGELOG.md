@@ -1,5 +1,19 @@
 # Changelog
 
+## Version 0.3.0
+
+Release date: 2025/08/14
+
+New features:
+
+* Add option to ignore specific files ([#10](https://github.com/fatiando/burocrata/pull/10))
+
+Maintenance: 
+
+* Bump minimum Python to 3.9 and check on 3.13 ([#22](https://github.com/fatiando/burocrata/pull/22))
+* Add a test workflow to GitHub Actions ([#23](https://github.com/fatiando/burocrata/pull/23))
+* Move to src layout and use Ruff ([#24](https://github.com/fatiando/burocrata/pull/24))
+
 ## Version 0.2.0
 
 Release date: 2024/03/04
